@@ -1,0 +1,8 @@
+_minted-main/*
+a.out
+*.o
+.vscode
+/src/lib/*
+main.c
+map.c
+map.h
