@@ -25,16 +25,6 @@
 #define WindowHeight 600
 static const Rectangle SelectorRect = {100, 100, 600, 400};
 
-static int Scene = 0; // trace current scene
-
-static int WorldX = 5;
-static int WorldY = 5;
-static int BeansAmount = 1;
-static int BeansDensity = 1;
-static int BoosterAmount = 1;
-static int BoosterDensity = 1;
-static float SliderBarValue = 100;
-
 enum GameMenu{
     WorldLabel = 1, WorldXLabel, WorldYLabel, BeansLabel, BeansAmountLabel, BeansDensityLabel, BoosterLabel, BoosterAmountLabel, BoosterDensityLabel
 };
@@ -76,7 +66,7 @@ void Myrender(Gui * myGui){ // Interface for main function to call
 void RenderMenuBar(Gui * myGui){ // render menubar
     DrawRectangle(0, 0, 800, 50, (Color){9, 54, 70, 255});
     if(GuiButton((Rectangle){0, 0, 100, 50}, "Main")) myGui -> Scene = &RenderMainMenu;
-    if(GuiButton((Rectangle){100, 0, 100, 50}, "Theme")) {myGui -> Scene = &RenderGame; myGui -> map = MapInit(myGui -> WorldX, myGui -> WorldY);}
+    //if(GuiButton((Rectangle){100, 0, 100, 50}, "Theme")) {myGui -> Scene = &RenderGame; myGui -> map = MapInit(myGui -> WorldX, myGui -> WorldY);}
     if(GuiButton((Rectangle){200, 0, 100, 50}, "Game")) myGui -> Scene = &RenderGameMenu;
     if(GuiButton((Rectangle){300, 0, 100, 50}, "Music")) myGui -> Scene = &RenderMusicMenu;
     if(GuiButton((Rectangle){400, 0, 100, 50}, "About")) myGui -> Scene = &RenderAbout;
@@ -88,7 +78,9 @@ void RenderMainMenu(Gui * myGui){ // render main menu
     GuiSetStyle(DEFAULT, TEXT_SIZE, Huge);
     GuiDrawText(GAMENAME, (Rectangle){100, 200, 600, 100}, TEXT_ALIGN_MIDDLE, WHITE);
     GuiSetStyle(DEFAULT, TEXT_SIZE, huge);
-    if(GuiButton((Rectangle){250, 400, 300, 75}, "START" )) {myGui -> Scene = &RenderGame; myGui -> map = MapInit(myGui -> WorldX, myGui -> WorldY);}
+    if(GuiButton((Rectangle){250, 400, 300, 75}, "START" )){
+        myGui -> Scene = &RenderGame; myGui -> map = MapInit(myGui -> WorldX, myGui -> WorldY, myGui -> BeansAmount, myGui -> BoosterAmount);
+    }
     GuiSetStyle(DEFAULT, TEXT_SIZE, normal);
 }
 
@@ -149,24 +141,49 @@ void RenderAbout(Gui * myGui){
 
 
 void RenderGame(Gui * myGui){
-    if(!(myGui -> map -> alive)){
+    int xOffset = (WindowWidth / 2) - (10 * myGui -> map -> x / 2), yOffset = (WindowHeight / 2) - (10 * myGui -> map -> y / 2);
+    if(!(myGui -> map -> alive) || myGui -> map -> playerScore == myGui -> map -> winScore){
         myGui -> Scene = &RenderMainMenu;
         FreeMap(myGui -> map);
         myGui -> map = NULL;
         return ;
     }
 	MapRun(myGui -> map);
+    
     for(int y = 0; y < myGui -> map -> y; y++){
         for(int x = 0; x < myGui ->map -> x; x++){
             if(myGui -> map -> world[x][y] != NULL){
-                GuiDrawText(&myGui -> map -> world[x][y] -> repr, (Rectangle){x * 10, y * 10, 25, 25}, TEXT_ALIGN_CENTER, WHITE);
+                GuiDrawText(&myGui -> map -> world[x][y] -> repr, (Rectangle){xOffset + x * 10, yOffset + y * 10, 25, 25}, TEXT_ALIGN_CENTER, WHITE);
             }
             else if ((x != myGui -> map -> player -> x) || (y != myGui -> map -> player -> y)){
-                GuiDrawText("*", (Rectangle){x * 10, y * 10, 25, 25}, TEXT_ALIGN_CENTER, WHITE);
+                GuiDrawText("*", (Rectangle){xOffset + x * 10, yOffset + y * 10, 25, 25}, TEXT_ALIGN_CENTER, GRAY);
             }
         }
     }
-    GuiDrawText("P", (Rectangle){myGui -> map -> player -> x * 10, myGui -> map -> player -> y * 10, 25, 25}, TEXT_ALIGN_CENTER, WHITE);
+    GuiDrawText("P", (Rectangle){xOffset + myGui -> map -> player -> x * 10, yOffset + myGui -> map -> player -> y * 10, 25, 25}, TEXT_ALIGN_CENTER, YELLOW);
+
+    char * temp = malloc(sizeof(char) * 5);
+
+    temp[0] = 'H';
+    temp[1] = 'P';
+    temp[2] = ':';
+    temp[3] = '0';
+    temp[4] = '0';
+    temp[4] = (char)((int)temp[3] + myGui -> map -> alive);
+
+    GuiDrawText(temp, (Rectangle){xOffset - 25, yOffset - 25, 40, 25}, TEXT_ALIGN_RIGHT, WHITE);
+
+    temp[0] = '0';
+    temp[1] = '0';
+    temp[2] = '/';
+    temp[3] = '0';
+    temp[4] = '0';
+    temp[0] = (char)((int)temp[0] + myGui -> map -> playerScore / 10);
+    temp[1] = (char)((int)temp[1] + myGui -> map -> playerScore % 10);
+    temp[3] = (char)((int)temp[3] + myGui -> map -> winScore / 10);
+    temp[4] = (char)((int)temp[4] + myGui -> map -> winScore % 10);
+
+    GuiDrawText(temp, (Rectangle){xOffset + 25, yOffset - 25, 40, 25}, TEXT_ALIGN_RIGHT, WHITE);
     /*
     for(int i = 0; i < sizeof(myGui -> map -> booster) / sizeof(myGui -> map -> booster[0]); i++){
         if(myGui -> map -> booster[i] != NULL)

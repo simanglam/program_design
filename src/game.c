@@ -5,14 +5,24 @@
 #include "include/game.h"
 #include "include/raylib.h"
 
-void CollideWithGhost(void * ptr){// 定義撞到鬼會發生什麼事
-	Map * map = ((Map *)ptr);
-	map -> alive = 0;
+void CollideWithGhost(void * map){// 定義撞到鬼會發生什麼事
+	Map * ptr = map;
+	ptr -> alive -= 1;
 }
 
-void CollideWithFrezze(void * ptr){// 定義撞到 freeze 效果的 booster 會發生什麼事 
-	Map * map = ((Map *)ptr);
-	map -> cool_down = 3;
+void CollideWithBean(void * map){// 定義撞到 freeze 效果的 booster 會發生什麼事 
+	Map * ptr = map;
+	ptr -> playerScore += 1;
+}
+
+void CollideWithFrezze(void * map){// 定義撞到 freeze 效果的 booster 會發生什麼事
+	Map * ptr = map;
+	ptr -> cool_down = 3;
+}
+
+void CollideWithExtra(void * map){// 定義撞到 freeze 效果的 booster 會發生什麼事
+	Map * ptr = map;
+	ptr -> alive += 1;
 }
 
 static MapObject * MakeGhost(int x, int y){// 將創建一個鬼的功能從主流程中剝離出來
@@ -26,8 +36,40 @@ static MapObject * MakeGhost(int x, int y){// 將創建一個鬼的功能從主�
 	return ghost;
 }
 
-Map * MapInit(int x, int y){
+static MapObject * MakeBooster(int type){// 將創建一個鬼的功能從主流程中剝離出來
+	MapObject * booster = malloc(sizeof(MapObject));
+	if (booster == NULL)
+		exit(1);
+	booster -> repr = 'B';
+	switch (type)
+	{
+	case 0:
+		booster -> collide = &CollideWithFrezze;
+		break;
+	
+	case 1:
+		booster -> collide = &CollideWithExtra;
+		break;
+	
+	default:
+		booster -> collide = &CollideWithFrezze;
+		break;
+	}
+	return booster;
+}
+
+static MapObject * MakeBean(){// 將創建一個鬼的功能從主流程中剝離出來
+	MapObject * Bean = malloc(sizeof(MapObject));
+	if (Bean == NULL)
+		exit(1);
+	Bean -> repr = 'S';
+	Bean -> collide = &CollideWithBean;
+	return Bean;
+}
+
+Map * MapInit(int x,int y, int BeansAmount, int BoosterAmount){
 	srand((unsigned int)time(NULL));
+	int tempX = 0, tempY = 0;
 	Map * map = malloc(sizeof(Map));
 	if (map == NULL)
 		exit(1);
@@ -35,42 +77,62 @@ Map * MapInit(int x, int y){
 	map -> alive = 1;
 	map -> x = x;
 	map -> y = y;
+	
+	map -> winScore = ((x * y) / (7 + BeansAmount - 1));
 
+	map -> enemy =  (MapObject **)malloc(sizeof(MapObject *) * (x * y) / 7);
+
+	if (map -> enemy == NULL)
+		exit(1);
+	
 	map -> world = (MapObject ***)malloc(x * sizeof(MapObject ***));
 	MapObject ** world_array = (MapObject **)malloc(x * y * sizeof(MapObject **));
 	if (map -> world == NULL || world_array == NULL)
 		exit(1);
 
-	for(int i = 0; i < x; i++){
+	for(int i = 0; i < map -> x; i++){
 		map -> world[i] = world_array + (i * y);
 	}
+
 	for(int y = 0; y < map -> y; y++){
         for(int x = 0; x < map -> x; x++){
-            map -> world[y][x] = NULL;
+            map -> world[x][y] = NULL;
         }
     }
+	
+	for(int i = 0; i < (x * y) / 7; i++){
+		do{
+			tempX = rand() % map -> x; tempY = rand() % map -> y;
+		} while (map -> world[tempX][tempY] != NULL);
+		map -> enemy[i] = MakeGhost(tempX, tempY);
+		map -> world[tempX][tempY] = map -> enemy[i];
+	}
+
+	for(int i = 0; i < ((x * y) / (7 + BeansAmount - 1)); i++){
+		do{
+			tempX = rand() % map -> x; tempY = rand() % map -> y;
+		} while (map -> world[tempX][tempY] != NULL);
+		map -> world[tempX][tempY] = MakeBooster(rand() % 2);
+	}
+
+	for(int i = 0; i < map -> winScore; i++){
+		do{
+			tempX = rand() % map -> x; tempY = rand() % map -> y;
+		} while (map -> world[tempX][tempY] != NULL);
+		map -> world[tempX][tempY] = MakeBean();
+	}
 
 	map -> player = (MapObject *)malloc(sizeof(MapObject));
 	if (map -> player == NULL)
 		exit(1);
 	map -> player -> repr = 'P';
-	map -> player -> x = 3;
-	map -> player -> y = 3;
 
-	map -> world[0][0] = malloc(sizeof(MapObject));
-	map -> world[0][0] -> collide = &CollideWithFrezze;
-	map -> world[0][0] -> repr = 'B';
+	do{
+		tempX = rand() % map -> x; tempY = rand() % map -> y;
+	} while (map -> world[tempX][tempY] != NULL);
 
-	map -> enemy =  (MapObject **)malloc(sizeof(MapObject *) * 3);
-	if (map -> enemy == NULL)
-		exit(1);
-	map -> enemy[0] = MakeGhost(2, 2);
-
-	for(int i = 0; i < sizeof(map -> enemy) / sizeof(map -> enemy[0]); i++){
-		if(map -> enemy[i] != NULL){
-			map -> world[map -> enemy[i] -> x][map -> enemy[i] -> y] = map -> enemy[i];
-		}
-	}
+	map -> player -> x = tempX;
+	map -> player -> y = tempY;
 
 	return map;
 }
@@ -81,7 +143,7 @@ void MapUpdate(Map * map){
 	if (!map -> cool_down){
 		int a = 0;
 		
-		for(int i = 0; i < sizeof(map -> enemy) / sizeof(map -> enemy[0]); i++){
+		for(int i = 0; i < (map -> x * map -> y) / 7; i++){
 			if(map -> enemy[i] != NULL){
 				oldX = map -> enemy[i] -> x; oldY = map -> enemy[i] -> y;
 				do{
@@ -101,22 +163,26 @@ void MapUpdate(Map * map){
 					}
 					if(map -> enemy[i] -> x >= 0 && map -> enemy[i] -> x < map -> x  && map -> enemy[i] -> y >= 0 && map -> enemy[i] -> y < map -> y){
 						if(map -> world[map -> enemy[i] -> x][map -> enemy[i] -> y] == NULL){
+							map -> world[map -> enemy[i] -> x][map -> enemy[i] -> y] = map -> world[oldX][oldY];
+							map -> world[oldX][oldY] = NULL;
+							break;
+						}
+						else if(map -> world[(oldX - 1 >= 0) ? oldX - 1 : oldX][oldY] != NULL && map -> world[(oldX + 1 < map -> x) ? oldX + 1 : oldX][oldY] != NULL && map -> world[oldX][(oldY - 1 >= 0) ? oldY - 1 : oldY]!= NULL && map -> world[oldX][(oldY + 1 < map -> y) ? oldY + 1 : oldY] != NULL){
+							map -> enemy[i] -> x = oldX;  map -> enemy[i] -> y = oldY;
 							break;
 						}
 					}
 				} while (1);
-				map -> world[map -> enemy[i] -> x][map -> enemy[i] -> y] = map -> world[oldX][oldY];
-				map -> world[oldX][oldY] = NULL;
 			}
 		}
 	}
 
 	else{
-		for(int i = 0; i < sizeof(map -> enemy) / sizeof(map -> enemy[0]); i++){
+		for(int i = 0; i < (map -> x * map -> y) / 7; i++){
 			if(map -> enemy[i] != NULL){
 				if((map -> enemy[i] -> x == map -> player -> x) && (map -> enemy[i] -> y == map -> player -> y)){
+					free(map -> world[map -> player -> x][map -> player -> y]);
 					map -> world[map -> player -> x][map -> player -> y] = NULL;
-					free(map -> enemy[i]);
 					map -> enemy[i] = NULL;
 				}
 			}
@@ -126,6 +192,14 @@ void MapUpdate(Map * map){
 
 	if(map -> world[map -> player -> x][map -> player -> y] != NULL){
 		map -> world[map -> player -> x][map -> player -> y] -> collide(map);
+
+		for(int i = 0; i < (map -> x * map -> y) / 7; i++){
+			if(map -> enemy[i] != NULL){
+				if((map -> enemy[i] -> x == map -> player -> x) && (map -> enemy[i] -> y == map -> player -> y)){
+					map -> enemy[i] = NULL;
+				}
+			}
+		}
 		free(map -> world[map -> player -> x][map -> player -> y]);
 		map -> world[map -> player -> x][map -> player -> y] = NULL;
 	}
@@ -161,8 +235,8 @@ void MapRun(Map * map){
 void FreeMap(Map * map){
 	for(int y = 0; y < map -> y; y++){
         for(int x = 0; x < map -> x; x++){
-            if(map -> world[y][x] != NULL){
-				free(map -> world[y][x]);
+            if(map -> world[x][y] != NULL){
+				free(map -> world[x][y]);
 			}
         }
     }

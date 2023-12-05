@@ -12,6 +12,8 @@ typedef struct map{
     int cool_down;
     int x, y;
     int alive;
+    int playerScore;
+    int winScore;
     MapObject *** world;
     MapObject ** enemy;
     MapObject * player;
@@ -21,7 +23,7 @@ typedef struct map{
 
 void MapRun(Map *map);
 void MapUpdate(Map *map);
-Map * MapInit(int x,int y);
+Map * MapInit(int x,int y, int BeansAmount, int BoosterAmount);
 void CollideWithFrezze(void *ptr);
 void CollideWithGhost(void *ptr);
 void FreeMap(Map * map);
