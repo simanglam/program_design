@@ -21,9 +21,8 @@
 
 #define SPACING 25
 
-const int WindowWidth = 800;
-const int WindowHeight = 600;
-
+#define WindowWidth 800
+#define WindowHeight 600
 static const Rectangle SelectorRect = {100, 100, 600, 400};
 
 static int Scene = 0; // trace current scene
@@ -44,110 +43,104 @@ enum MusicMenu{
 MusicLabel, VolumeLabel
 };
 
-void MyGuiInit(){ // Init Gui Relate thing
+Gui * MyGuiInit(){ // Init Gui Relate thing
+    Gui * myGui = malloc(sizeof(Gui));
+    if(myGui == NULL)
+        exit(1);
+    
     InitWindow(WindowWidth, WindowHeight, "Pac Man");
     SetTargetFPS(50);
     GuiLoadStyleCyber();
     MyAudioInit();
+    myGui -> WorldX = 5;
+    myGui -> WorldY = 5;
+    myGui -> BeansAmount = 1;
+    myGui -> BeansDensity = 1;
+    myGui -> BoosterAmount = 1;
+    myGui -> BoosterDensity = 1;
+    myGui -> SliderBarValue = 100;
+    myGui -> Scene = &RenderMainMenu;
+    myGui -> Render = &Myrender; 
+    return myGui;
     //PlayMusicStream(bg_music);
 }
 
-void MYrender(void){ // Interface for main function to call
+void Myrender(Gui * myGui){ // Interface for main function to call
     AudioUpdate();
     BeginDrawing();
         ClearBackground(BLACK);
-        switch (Scene)
-        {
-            case 0:
-                RenderMainMenu();
-                break;
-            case 1:
-                RenderGame();
-                break;
-            case 2:
-                RenderGameMenu();
-                break;
-            case 3:
-                RenderMusicMenu();
-                break;
-            case 4:
-                RenderAbout();
-                break;
-            case 5:
-                RenderGame();
-                break;
-        }
+        myGui -> Scene(myGui);
     EndDrawing();
 }
 
-void RenderMenuBar(void){ // render menubar
+void RenderMenuBar(Gui * myGui){ // render menubar
     DrawRectangle(0, 0, 800, 50, (Color){9, 54, 70, 255});
-    if(GuiButton((Rectangle){0, 0, 100, 50}, "Main")) Scene = 0;
-    if(GuiButton((Rectangle){100, 0, 100, 50}, "Theme")) {Scene = 1; map_init(WorldX, WorldY);}
-    if(GuiButton((Rectangle){200, 0, 100, 50}, "Game")) Scene = 2;
-    if(GuiButton((Rectangle){300, 0, 100, 50}, "Music")) Scene = 3;
-    if(GuiButton((Rectangle){400, 0, 100, 50}, "About")) Scene = 4;
+    if(GuiButton((Rectangle){0, 0, 100, 50}, "Main")) myGui -> Scene = &RenderMainMenu;
+    if(GuiButton((Rectangle){100, 0, 100, 50}, "Theme")) {myGui -> Scene = &RenderGame; myGui -> map = map_init(myGui -> WorldX, myGui -> WorldY);}
+    if(GuiButton((Rectangle){200, 0, 100, 50}, "Game")) myGui -> Scene = &RenderGameMenu;
+    if(GuiButton((Rectangle){300, 0, 100, 50}, "Music")) myGui -> Scene = &RenderMusicMenu;
+    if(GuiButton((Rectangle){400, 0, 100, 50}, "About")) myGui -> Scene = &RenderAbout;
 }
 
-void RenderMainMenu(void){ // render main menu
-    RenderMenuBar();
+void RenderMainMenu(Gui * myGui){ // render main menu
+    RenderMenuBar(myGui);
     DrawRectangle(100, 200, 600, 100, (Color){9, 54, 70, 255});
     GuiSetStyle(DEFAULT, TEXT_SIZE, Huge);
     GuiDrawText(GAMENAME, (Rectangle){100, 200, 600, 100}, TEXT_ALIGN_MIDDLE, WHITE);
     GuiSetStyle(DEFAULT, TEXT_SIZE, huge);
-    if(GuiButton((Rectangle){250, 400, 300, 75}, "START" )) {Scene = 1; map_init(WorldX, WorldY);}
+    if(GuiButton((Rectangle){250, 400, 300, 75}, "START" )) {myGui -> Scene = &RenderGame; myGui -> map = map_init(myGui -> WorldX, myGui -> WorldY);}
     GuiSetStyle(DEFAULT, TEXT_SIZE, normal);
 }
 
-void RenderGameMenu(void){
-    RenderMenuBar();
+void RenderGameMenu(Gui * myGui){
+    RenderMenuBar(myGui);
     GuiSetStyle(DEFAULT, TEXT_SIZE, Large);
     DrawRectangleRec(SelectorRect, (Color){9, 54, 70, 255});
     
     GuiDrawText("World", (Rectangle){SelectorRect.x + 25 , SelectorRect.y + SPACING * WorldLabel, 125, 25}, TEXT_ALIGN_LEFT, WHITE);
 
     GuiDrawText("World Width ", (Rectangle){SelectorRect.x + 50, SelectorRect.y + SPACING * WorldXLabel, 125, 25}, TEXT_ALIGN_LEFT, WHITE);
-    GuiSpinner((Rectangle){SelectorRect.x + 175, SelectorRect.y + SPACING * WorldXLabel, 125, 25}, NULL, &WorldX, 5, 40, false);
+    GuiSpinner((Rectangle){SelectorRect.x + 175, SelectorRect.y + SPACING * WorldXLabel, 125, 25}, NULL, &(myGui -> WorldX), 5, 40, false);
 
     GuiDrawText("World Height", (Rectangle){SelectorRect.x + 50, SelectorRect.y + SPACING * WorldYLabel, 125, 25}, TEXT_ALIGN_LEFT, WHITE);
-    GuiSpinner((Rectangle){SelectorRect.x + 175, SelectorRect.y + SPACING * WorldYLabel, 125, 25}, NULL, &WorldY, 5, 40, false);
+    GuiSpinner((Rectangle){SelectorRect.x + 175, SelectorRect.y + SPACING * WorldYLabel, 125, 25}, NULL, &(myGui -> WorldY), 5, 40, false);
 
     GuiDrawText("Beans", (Rectangle){SelectorRect.x + SPACING, SelectorRect.y + SPACING * BeansLabel, 125, 25}, TEXT_ALIGN_LEFT, WHITE);
 
     GuiDrawText("Amount", (Rectangle){SelectorRect.x + 50, SelectorRect.y + SPACING * BeansAmountLabel, 125, 25}, TEXT_ALIGN_LEFT, WHITE);
-    GuiComboBox((Rectangle){SelectorRect.x + 150, SelectorRect.y + SPACING * BeansAmountLabel, 125, 25}, "Small;Default;Many", &BeansAmount);
+    GuiComboBox((Rectangle){SelectorRect.x + 150, SelectorRect.y + SPACING * BeansAmountLabel, 125, 25}, "Small;Default;Many", &(myGui -> BeansAmount));
 
     GuiDrawText("Density", (Rectangle){SelectorRect.x + 50, SelectorRect.y + SPACING * BeansDensityLabel, 100, 25}, TEXT_ALIGN_LEFT, WHITE);
-    GuiComboBox((Rectangle){SelectorRect.x + 150, SelectorRect.y + SPACING * BeansDensityLabel, 125, 25}, "Small;Default;Many", &BeansDensity);
+    GuiComboBox((Rectangle){SelectorRect.x + 150, SelectorRect.y + SPACING * BeansDensityLabel, 125, 25}, "Small;Default;Many", &(myGui -> BeansDensity));
 
     GuiDrawText("Booster", (Rectangle){SelectorRect.x + 25, SelectorRect.y + SPACING * BoosterLabel, 100, 25}, TEXT_ALIGN_LEFT, WHITE);
 
     GuiDrawText("Amount", (Rectangle){SelectorRect.x + 50, SelectorRect.y + SPACING * BoosterAmountLabel, 100, 25}, TEXT_ALIGN_LEFT, WHITE);
-    GuiComboBox((Rectangle){SelectorRect.x + 150, SelectorRect.y + SPACING * BoosterAmountLabel , 125, 25}, "Small;Default;Many", &BoosterAmount);
+    GuiComboBox((Rectangle){SelectorRect.x + 150, SelectorRect.y + SPACING * BoosterAmountLabel , 125, 25}, "Small;Default;Many", &(myGui -> BoosterAmount));
 
     GuiDrawText("Density", (Rectangle){SelectorRect.x + 50, SelectorRect.y + SPACING * BoosterDensityLabel, 100, 25}, TEXT_ALIGN_LEFT, WHITE);
-    GuiComboBox((Rectangle){SelectorRect.x + 150, SelectorRect.y + SPACING * BoosterDensityLabel, 125, 25}, "Small;Default;Many", &BoosterDensity);
+    GuiComboBox((Rectangle){SelectorRect.x + 150, SelectorRect.y + SPACING * BoosterDensityLabel, 125, 25}, "Small;Default;Many", &(myGui -> BoosterDensity));
 
     GuiSetStyle(DEFAULT, TEXT_SIZE, normal);
 }
 
-void RenderMusicMenu(){
-    RenderMenuBar();
+void RenderMusicMenu(Gui * myGui){
+    RenderMenuBar(myGui);
     DrawRectangleRec(SelectorRect, (Color){9, 54, 70, 255});
     GuiSetStyle(DEFAULT, TEXT_SIZE, Large);
 
     GuiDrawText("Volume", (Rectangle){SelectorRect.x + 25, SelectorRect.y + SPACING * VolumeLabel, 100, 25}, TEXT_ALIGN_LEFT, WHITE);
-    GuiSliderBar((Rectangle){SelectorRect.x + 125, SelectorRect.y + SPACING * VolumeLabel, 100, 25}, NULL, TextFormat("%i", (int)SliderBarValue), &SliderBarValue, 0, 200);
+    GuiSliderBar((Rectangle){SelectorRect.x + 125, SelectorRect.y + SPACING * VolumeLabel, 100, 25}, NULL, TextFormat("%i", (int)myGui -> SliderBarValue), &(myGui -> SliderBarValue), 0, 200);
 
     GuiSetStyle(DEFAULT, TEXT_SIZE, normal);
 
     if(GuiButton((Rectangle){SelectorRect.x + 25, SelectorRect.y + SPACING * 3, 100, 25},"Apply")){
-        SetVolume(SliderBarValue / 100);
+        SetVolume(myGui -> SliderBarValue / 100);
     };
 }
 
-void RenderAbout(){
-    RenderMenuBar();
+void RenderAbout(Gui * myGui){
+    RenderMenuBar(myGui);
     GuiSetStyle(DEFAULT, TEXT_SIZE, Large);
     DrawRectangleRec(SelectorRect, (Color){9, 54, 70, 255});
     GuiDrawText("Pac-Man\nMade by Simanglam.\nUsing Raylib and Raygui for GUI.\nFinal Project of Program Design I.", SelectorRect, TEXT_ALIGN_CENTER, WHITE);
@@ -155,13 +148,32 @@ void RenderAbout(){
 }
 
 
-void RenderGame(){
-    if(IsGameAlive())
-	    map_run();
-    else if (IsGameWin()){
-        Scene = 0;
+void RenderGame(Gui * myGui){
+    if(!(myGui -> map -> alive)){
+        myGui -> Scene = &RenderMainMenu;
+        
+        return ;
     }
-    else{
-        Scene = 0;
+	map_run(myGui -> map);
+    for(int y = 0; y < myGui -> map -> y; y++){
+        for(int x = 0; x < myGui ->map -> x; x++){
+            if(myGui -> map -> world[x][y] != NULL){
+                GuiDrawText(&myGui -> map -> world[x][y] -> repr, (Rectangle){x * 10, y * 10, 25, 25}, TEXT_ALIGN_CENTER, WHITE);
+            }
+            else if ((x != myGui -> map -> player -> x) || (y != myGui -> map -> player -> y)){
+                GuiDrawText("*", (Rectangle){x * 10, y * 10, 25, 25}, TEXT_ALIGN_CENTER, WHITE);
+            }
+        }
     }
+    GuiDrawText("P", (Rectangle){myGui -> map -> player -> x * 10, myGui -> map -> player -> y * 10, 25, 25}, TEXT_ALIGN_CENTER, WHITE);
+    /*
+    for(int i = 0; i < sizeof(myGui -> map -> booster) / sizeof(myGui -> map -> booster[0]); i++){
+        if(myGui -> map -> booster[i] != NULL)
+            GuiDrawText("B", (Rectangle){myGui -> map -> booster[i] -> x * 10, myGui -> map -> booster[i] -> y * 10, 25, 25}, TEXT_ALIGN_CENTER, WHITE);
+    }
+    for(int i = 0; i < sizeof(myGui -> map -> enemy) / sizeof(myGui -> map -> enemy[0]); i++){
+        if(myGui -> map -> enemy[i] != NULL)
+            GuiDrawText("G", (Rectangle){myGui -> map -> enemy[i] -> x * 10, myGui -> map -> enemy[i] -> y * 10, 25, 25}, TEXT_ALIGN_CENTER, WHITE);
+    }
+    */
 }

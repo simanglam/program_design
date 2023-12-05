@@ -4,12 +4,15 @@ OSLIB = -framework IOKit -framework Cocoa -framework OpenGL -framework CoreAudio
 INCLUDE = include/
 
 all: main.c render.o audio.o game.o
-	make game
-	make audio
-	make render
+	make game.o
+	make audio.o
+	make render.o
 	make main.o
-	$(CC) main.o render.o audio.o game.o $(LIB) $(OSLIB)
+	make main
 .PHONY: all
+
+main: main.c render.o audio.o game.o
+	$(CC) main.o render.o audio.o game.o $(LIB) $(OSLIB) -o main
 
 main.o: main.c
 	$(CC) -I $(INCLUDE) -c main.c -o main.o

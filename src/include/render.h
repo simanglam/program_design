@@ -1,19 +1,10 @@
 /* This file was automatically generated.  Do not edit! */
 #undef INTERFACE
-void RenderMenuBar(void);
-void RenderAbout();
-void RenderMusicMenu();
-void RenderGameMenu(void);
-void RenderGame();
-void RenderMainMenu(void);
-void MYrender(void);
-void MyGuiInit();
-extern const int WindowHeight;
-extern const int WindowWidth;
+#include <game.h>
 
-typedef struct gui
-{
-    int Scene;
+#ifndef GUI
+#define GUI
+typedef struct gui{
     int WorldX;
     int WorldY;
     int BeansAmount;
@@ -21,6 +12,18 @@ typedef struct gui
     int BoosterAmount;
     int BoosterDensity;
     float SliderBarValue;
-    void (*render)(struct gui *);
+    void (*Scene)(struct gui *);
+    void (*Render)(struct gui *);
+    Map * map;
 } Gui;
 
+#endif
+
+void RenderMenuBar(Gui *myGui);
+void RenderAbout(Gui *myGui);
+void RenderMusicMenu(Gui *myGui);
+void RenderGameMenu(Gui *myGui);
+void RenderGame(Gui *myGui);
+void RenderMainMenu(Gui *myGui);
+void Myrender(Gui *myGui);
+Gui *MyGuiInit();

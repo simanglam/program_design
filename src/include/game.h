@@ -1,6 +1,7 @@
 /* This file was automatically generated.  Do not edit! */
 #undef INTERFACE
-
+#ifndef MAPOBJECT
+#define MAPOBJECT
 typedef struct mapobject{
 	int x, y;
 	char repr;
@@ -11,16 +12,16 @@ typedef struct map{
     int cool_down;
     int x, y;
     int alive;
+    MapObject *** world;
     MapObject ** enemy;
-    MapObject ** booster;
     MapObject * player;
 } Map;
 
-int IsGameAlive();
-int IsGameWin();
-void map_run();
-void map_update();
-void map_init(int x,int y);
-void map_print();
-void collide_with_freeze(void *ptr);
-void collide_with_ghost(void *ptr);
+#endif
+
+void MapRun(Map *map);
+void MpaUpdate(Map *map);
+Map * MapInit(int x,int y);
+void CollideWithFrezze(void *ptr);
+void CollideWithGhost(void *ptr);
+void FreeMap();
