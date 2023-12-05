@@ -58,13 +58,13 @@ Map * MapInit(int x, int y){
 	map -> player -> y = 3;
 
 	map -> world[0][0] = malloc(sizeof(MapObject));
-	map -> world[0][0] -> collide = &CollideWithGhost;
+	map -> world[0][0] -> collide = &CollideWithFrezze;
 	map -> world[0][0] -> repr = 'B';
 
 	map -> enemy =  (MapObject **)malloc(sizeof(MapObject *) * 3);
 	if (map -> enemy == NULL)
 		exit(1);
-	map -> enemy[0] = make_ghost(2, 2);
+	map -> enemy[0] = MakeGhost(2, 2);
 
 	for(int i = 0; i < sizeof(map -> enemy) / sizeof(map -> enemy[0]); i++){
 		if(map -> enemy[i] != NULL){
@@ -75,7 +75,8 @@ Map * MapInit(int x, int y){
 	return map;
 }
 
-void MpaUpdate(Map * map){
+void MapUpdate(Map * map){
+
 	int oldX, oldY;
 	if (!map -> cool_down){
 		int a = 0;
@@ -114,6 +115,7 @@ void MpaUpdate(Map * map){
 		for(int i = 0; i < sizeof(map -> enemy) / sizeof(map -> enemy[0]); i++){
 			if(map -> enemy[i] != NULL){
 				if((map -> enemy[i] -> x == map -> player -> x) && (map -> enemy[i] -> y == map -> player -> y)){
+					map -> world[map -> player -> x][map -> player -> y] = NULL;
 					free(map -> enemy[i]);
 					map -> enemy[i] = NULL;
 				}
@@ -133,25 +135,40 @@ void MapRun(Map * map){
 	if (IsKeyPressed(KEY_A)){
 		if (map -> player -> x - 1 >= 0){
 			map -> player -> x -= 1;
-			map_update(map);
+			MapUpdate(map);
 		}
 	}
 	else if (IsKeyPressed(KEY_S)){
 		if ((map -> player -> y) + 1 < map -> y){
 			map -> player -> y += 1;
-			map_update(map);
+			MapUpdate(map);
 		}
 	}
 	else if (IsKeyPressed(KEY_D)){
 		if ((map -> player -> x) + 1 < map -> x){
 			map -> player -> x += 1;
-			map_update(map);
+			MapUpdate(map);
 		}
 	}
 	else if (IsKeyPressed(KEY_W)){
 		if ((map -> player -> y) - 1 >= 0){
 			map -> player -> y -= 1;
-			map_update(map);
+			MapUpdate(map);
 		}
 	}
+}
+
+void FreeMap(Map * map){
+	for(int y = 0; y < map -> y; y++){
+        for(int x = 0; x < map -> x; x++){
+            if(map -> world[y][x] != NULL){
+				free(map -> world[y][x]);
+			}
+        }
+    }
+	free(map -> world[0]);
+	free(map -> world);
+	free(map -> enemy);
+	free(map -> player);
+	free(map);
 }

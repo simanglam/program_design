@@ -76,7 +76,7 @@ void Myrender(Gui * myGui){ // Interface for main function to call
 void RenderMenuBar(Gui * myGui){ // render menubar
     DrawRectangle(0, 0, 800, 50, (Color){9, 54, 70, 255});
     if(GuiButton((Rectangle){0, 0, 100, 50}, "Main")) myGui -> Scene = &RenderMainMenu;
-    if(GuiButton((Rectangle){100, 0, 100, 50}, "Theme")) {myGui -> Scene = &RenderGame; myGui -> map = map_init(myGui -> WorldX, myGui -> WorldY);}
+    if(GuiButton((Rectangle){100, 0, 100, 50}, "Theme")) {myGui -> Scene = &RenderGame; myGui -> map = MapInit(myGui -> WorldX, myGui -> WorldY);}
     if(GuiButton((Rectangle){200, 0, 100, 50}, "Game")) myGui -> Scene = &RenderGameMenu;
     if(GuiButton((Rectangle){300, 0, 100, 50}, "Music")) myGui -> Scene = &RenderMusicMenu;
     if(GuiButton((Rectangle){400, 0, 100, 50}, "About")) myGui -> Scene = &RenderAbout;
@@ -88,7 +88,7 @@ void RenderMainMenu(Gui * myGui){ // render main menu
     GuiSetStyle(DEFAULT, TEXT_SIZE, Huge);
     GuiDrawText(GAMENAME, (Rectangle){100, 200, 600, 100}, TEXT_ALIGN_MIDDLE, WHITE);
     GuiSetStyle(DEFAULT, TEXT_SIZE, huge);
-    if(GuiButton((Rectangle){250, 400, 300, 75}, "START" )) {myGui -> Scene = &RenderGame; myGui -> map = map_init(myGui -> WorldX, myGui -> WorldY);}
+    if(GuiButton((Rectangle){250, 400, 300, 75}, "START" )) {myGui -> Scene = &RenderGame; myGui -> map = MapInit(myGui -> WorldX, myGui -> WorldY);}
     GuiSetStyle(DEFAULT, TEXT_SIZE, normal);
 }
 
@@ -151,10 +151,11 @@ void RenderAbout(Gui * myGui){
 void RenderGame(Gui * myGui){
     if(!(myGui -> map -> alive)){
         myGui -> Scene = &RenderMainMenu;
-        
+        FreeMap(myGui -> map);
+        myGui -> map = NULL;
         return ;
     }
-	map_run(myGui -> map);
+	MapRun(myGui -> map);
     for(int y = 0; y < myGui -> map -> y; y++){
         for(int x = 0; x < myGui ->map -> x; x++){
             if(myGui -> map -> world[x][y] != NULL){

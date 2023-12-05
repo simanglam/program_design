@@ -20,8 +20,8 @@ typedef struct map{
 #endif
 
 void MapRun(Map *map);
-void MpaUpdate(Map *map);
+void MapUpdate(Map *map);
 Map * MapInit(int x,int y);
 void CollideWithFrezze(void *ptr);
 void CollideWithGhost(void *ptr);
-void FreeMap();
+void FreeMap(Map * map);
