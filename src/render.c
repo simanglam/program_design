@@ -183,7 +183,7 @@ void RenderGame(Gui * myGui){
     temp[3] = (char)((int)temp[3] + myGui -> map -> winScore / 10);
     temp[4] = (char)((int)temp[4] + myGui -> map -> winScore % 10);
 
-    GuiDrawText(temp, (Rectangle){xOffset + 25, yOffset - 25, 40, 25}, TEXT_ALIGN_RIGHT, WHITE);
+    GuiDrawText(temp, (Rectangle){xOffset + 10 * myGui -> map -> x, yOffset - 25, 40, 25}, TEXT_ALIGN_LEFT, WHITE);
     /*
     for(int i = 0; i < sizeof(myGui -> map -> booster) / sizeof(myGui -> map -> booster[0]); i++){
         if(myGui -> map -> booster[i] != NULL)

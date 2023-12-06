@@ -4,7 +4,5 @@ a.out
 .vscode
 /src/lib
 /src/lib/*
-map.c
-map.h
 /src/makeheaders
 /src/main
