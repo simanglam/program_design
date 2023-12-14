@@ -258,3 +258,10 @@ void RenderResult(Gui * myGui){
 
 	GuiSetStyle(DEFAULT, TEXT_SIZE, normal);
 }
+
+void FreeGui(Gui *myGui){
+	if (myGui -> map != NULL){
+		FreeMap(myGui -> map);
+	}
+	free(myGui);
+}
