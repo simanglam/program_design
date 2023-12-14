@@ -9,6 +9,7 @@ int main(){
     while (!WindowShouldClose()){
         game -> Render(game);
     }
+    free(game);
     CloseAudioDevice();
     CloseWindow();
     

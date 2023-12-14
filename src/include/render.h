@@ -7,6 +7,7 @@
 typedef struct gui{
     int WorldX;
     int WorldY;
+    int Theme;
     int BeansAmount;
     int BeansDensity;
     int BoosterAmount;
@@ -26,4 +27,6 @@ void RenderGameMenu(Gui *myGui);
 void RenderGame(Gui *myGui);
 void RenderMainMenu(Gui *myGui);
 void Myrender(Gui *myGui);
+void RenderTheme(Gui * myGui);
+void RenderResult(Gui * myGui);
 Gui *MyGuiInit();

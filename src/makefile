@@ -2,26 +2,23 @@ CC = clang
 LIB = lib/libraylib.a
 OSLIB = -framework IOKit -framework Cocoa -framework OpenGL -framework CoreAudio
 INCLUDE = include/
+OPTIONS = -std=c11
 
-all: main.c render.o audio.o game.o
-	make game.o
-	make audio.o
-	make render.o
-	make main.o
+all: main.o render.o audio.o game.o
 	make main
 .PHONY: all
 
-main: main.c render.o audio.o game.o
-	$(CC) main.o render.o audio.o game.o $(LIB) $(OSLIB) -o main
+main: main.o render.o audio.o game.o
+	$(CC) main.o render.o audio.o game.o $(LIB) $(OSLIB) -o main $(OPTIONS)
 
 main.o: main.c
-	$(CC) -I $(INCLUDE) -c main.c -o main.o
+	$(CC) -I $(INCLUDE) -c main.c -o main.o $(OPTIONS)
 
 game: game.c
 	make game.o
 
 game.o: game.c
-	$(CC) -I $(INCLUDE) -c game.c -o game.o
+	$(CC) -I $(INCLUDE) -c game.c -o game.o $(OPTIONS)
 
 game.h: game.c
 	./makeheaders game.c -o=$(INCLUDE)
@@ -33,17 +30,23 @@ audio: audio.c
 .PHONY: audio
 
 audio.o: audio.c
-	$(CC) -I $(INCLUDE) -c audio.c -o audio.o
+	$(CC) -I $(INCLUDE) -c audio.c -o audio.o $(OPTIONS)
 
 audio.h: audio.c
-	./makeheaders audio.c -o=$(INCLUDE)
+	./makeheaders audio.c -o=$(INCLUDE) 
 
 render: render.c
-	make render.o
+	make render.o $(OPTIONS)
 
 render.o: render.c
-	$(CC) -I $(INCLUDE) -c render.c -o render.o
+	$(CC) -I $(INCLUDE) -c render.c -o render.o $(OPTIONS)
 
 render.h: render.c
 	./makeheaders render.c -o=$(INCLUDE)
 
+clean: 
+	rm render.o 
+	rm audio.o 
+	rm game.o 
+	rm main.o 
+.PHONY: clean

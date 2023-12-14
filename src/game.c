@@ -18,6 +18,7 @@ void CollideWithBean(void * map){// 定義撞到 freeze 效果的 booster 會發
 void CollideWithFrezze(void * map){// 定義撞到 freeze 效果的 booster 會發生什麼事
 	Map * ptr = map;
 	ptr -> cool_down = 3;
+	PlayBooster();
 }
 
 void CollideWithExtra(void * map){// 定義撞到 freeze 效果的 booster 會發生什麼事
@@ -188,6 +189,8 @@ void MapUpdate(Map * map){
 			}
 		}
 		--(map -> cool_down);
+		if(map -> cool_down == 0)
+			PlayBg();
 	}
 
 	if(map -> world[map -> player -> x][map -> player -> y] != NULL){
