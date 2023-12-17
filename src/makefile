@@ -1,8 +1,15 @@
-CC = clang
+OS := $(shell uname)
+
+ifeq ($(OS), Darwin)
+    CC = clang
+else
+    CC = gcc
+endif
+
 LIB = lib/libraylib.a
 OSLIB = -framework IOKit -framework Cocoa -framework OpenGL -framework CoreAudio
 INCLUDE = include/
-OPTIONS = -std=c11
+OPTIONS = 
 
 all: main.o render.o audio.o game.o
 	make main
@@ -22,21 +29,12 @@ game.o: game.c
 
 game.h: game.c
 	./makeheaders game.c -o=$(INCLUDE)
-.PHONY: game.h
-
-audio: audio.c
-	make audio.h
-	make audio.o
-.PHONY: audio
 
 audio.o: audio.c
 	$(CC) -I $(INCLUDE) -c audio.c -o audio.o $(OPTIONS)
 
 audio.h: audio.c
 	./makeheaders audio.c -o=$(INCLUDE) 
-
-render: render.c
-	make render.o $(OPTIONS)
 
 render.o: render.c
 	$(CC) -I $(INCLUDE) -c render.c -o render.o $(OPTIONS)

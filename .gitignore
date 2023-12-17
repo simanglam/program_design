@@ -2,7 +2,7 @@ _minted-main/*
 a.out
 *.o
 .vscode
-/src/lib
 /src/lib/*
 /src/makeheaders
 /src/main
+/src/run.sh

@@ -13,8 +13,8 @@ typedef struct gui{
     int BoosterAmount;
     int BoosterDensity;
     float SliderBarValue;
-    void (*Scene)(struct gui *);
-    void (*Render)(struct gui *);
+    void (*Scene)(struct gui *); // state 設計模式，為未來保留可擴充性
+    void (*Render)(struct gui *); // 為未來保留可擴充性
     Map * map;
 } Gui;
 

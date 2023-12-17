@@ -6,11 +6,11 @@
 int main(){
     Gui * game = MyGuiInit();
 
-    while (!WindowShouldClose()){
+    while (!WindowShouldClose()){ // 如果遊戲視窗沒有收到關閉訊號
         game -> Render(game);
     }
+
     FreeGui(game);
     CloseAudioDevice();
     CloseWindow();
-    
 }

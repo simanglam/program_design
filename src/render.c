@@ -23,6 +23,7 @@
 
 #define GAMENAME "PAC MAN"
 
+// define font size, syntax inspired by LaTeX
 #define Huge 60
 #define huge 40
 #define LARGE 30
@@ -34,14 +35,14 @@
 
 #define WindowWidth 800
 #define WindowHeight 600
-static const Rectangle SelectorRect = {100, 100, 600, 400};
+static const Rectangle SelectorRect = {100, 100, 600, 400}; // 讓背景有一個基準點，如果要改基準點也比較容易 
 
-enum GameMenu{
+static enum GameMenu{ // 定義 Game Menu 中 Element 的順序，如果需增添 element 會較容易
 	WorldLabel = 1, WorldXLabel, WorldYLabel, BeansLabel, BeansAmountLabel, BoosterLabel, BoosterAmountLabel
 };
 
-enum MusicMenu{
-MusicLabel, VolumeLabel
+static enum MusicMenu{
+	MusicLabel, VolumeLabel
 };
 
 Gui * MyGuiInit(){ // Init Gui Relate thing
@@ -64,14 +65,13 @@ Gui * MyGuiInit(){ // Init Gui Relate thing
 	myGui -> Scene = &RenderMainMenu;
 	myGui -> Render = &Myrender; 
 	return myGui;
-	//PlayMusicStream(bg_music);
 }
 
 void Myrender(Gui * myGui){ // Interface for main function to call
 	AudioUpdate();
 	BeginDrawing();
 		ClearBackground(BLACK);
-		myGui -> Scene(myGui);
+		myGui -> Scene(myGui); // State 模式，將 Scene 用 fuctional pointer call，保留擴充性的同時也不讓 code 變得難以維護
 	EndDrawing();
 }
 
@@ -96,7 +96,7 @@ void RenderMainMenu(Gui * myGui){ // render main menu
 	GuiSetStyle(DEFAULT, TEXT_SIZE, normal);
 }
 
-void RenderTheme(Gui * myGui){
+void RenderTheme(Gui * myGui){ // render theme menu
 	RenderMenuBar(myGui);
 
 	DrawRectangleRec(SelectorRect, (Color){9, 54, 70, 255});
@@ -108,7 +108,7 @@ void RenderTheme(Gui * myGui){
 	GuiSetStyle(DEFAULT, TEXT_SIZE, normal);
 
 	if(GuiButton((Rectangle){SelectorRect.x + 25, SelectorRect.y + SPACING * 3, 100, 25},"Apply")){
-		switch (myGui -> Theme){
+		switch (myGui -> Theme){ // change theme
 			case 0:
 				GuiLoadStyleAshes();
 				break;
@@ -150,7 +150,7 @@ void RenderTheme(Gui * myGui){
 
 }
 
-void RenderGameMenu(Gui * myGui){
+void RenderGameMenu(Gui * myGui){ // render game menu
 	RenderMenuBar(myGui);
 	GuiSetStyle(DEFAULT, TEXT_SIZE, Large);
 	DrawRectangleRec(SelectorRect, (Color){9, 54, 70, 255});
@@ -176,7 +176,7 @@ void RenderGameMenu(Gui * myGui){
 	GuiSetStyle(DEFAULT, TEXT_SIZE, normal);
 }
 
-void RenderMusicMenu(Gui * myGui){
+void RenderMusicMenu(Gui * myGui){ // render music menu
 	RenderMenuBar(myGui);
 	DrawRectangleRec(SelectorRect, (Color){9, 54, 70, 255});
 	GuiSetStyle(DEFAULT, TEXT_SIZE, Large);
@@ -191,7 +191,7 @@ void RenderMusicMenu(Gui * myGui){
 	};
 }
 
-void RenderAbout(Gui * myGui){
+void RenderAbout(Gui * myGui){ // render about menu
 	RenderMenuBar(myGui);
 	GuiSetStyle(DEFAULT, TEXT_SIZE, Large);
 	DrawRectangleRec(SelectorRect, (Color){9, 54, 70, 255});
@@ -199,7 +199,7 @@ void RenderAbout(Gui * myGui){
 	GuiSetStyle(DEFAULT, TEXT_SIZE, normal);
 }
 
-void RenderGame(Gui * myGui){
+void RenderGame(Gui * myGui){ // render game base on game state
 	int xOffset = (WindowWidth / 2) - (10 * myGui -> map -> x / 2), yOffset = (WindowHeight / 2) - (10 * myGui -> map -> y / 2);
 	if(!(myGui -> map -> alive) || myGui -> map -> playerScore == myGui -> map -> winScore){
 		myGui -> Scene = &RenderResult;
@@ -245,7 +245,7 @@ void RenderGame(Gui * myGui){
 	free(temp);
 }
 
-void RenderResult(Gui * myGui){
+void RenderResult(Gui * myGui){// render Result
 	GuiSetStyle(DEFAULT, TEXT_SIZE, Huge);
 
 	GuiDrawText((myGui -> map -> alive) ? "You Win!" : "You Lose", (Rectangle){WindowWidth / 2 - 125, WindowHeight / 2 - 100, 250, 200}, TEXT_ALIGN_CENTER, WHITE);
@@ -259,7 +259,7 @@ void RenderResult(Gui * myGui){
 	GuiSetStyle(DEFAULT, TEXT_SIZE, normal);
 }
 
-void FreeGui(Gui *myGui){
+void FreeGui(Gui *myGui){// free gui to prevent memoryleak
 	if (myGui -> map != NULL){
 		FreeMap(myGui -> map);
 	}
